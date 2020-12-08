@@ -48,7 +48,13 @@ namespace MandelbrotNetCore
             return _escapeValues;
         }
 
-        public int[][] GenerateParallel(int pxSize, int maxIterations)
+        /// <summary>
+        ///     Escape time alg with Complex type
+        /// </summary>
+        /// <param name="pxSize"></param>
+        /// <param name="maxIterations"></param>
+        /// <returns></returns>
+        public int[][] GenerateParallelWithComplex(int pxSize, int maxIterations)
         {
             _escapeValues = new int[pxSize][];
 
@@ -68,6 +74,101 @@ namespace MandelbrotNetCore
                         double im = minY + j * deltaY;
                         var c = new Complex(re, im);
                         int iterations = IterateZ(c, maxIterations);
+                        _escapeValues[i][j] = iterations;
+                    }
+                }
+            );
+
+            return _escapeValues;
+        }
+
+        /// <summary>
+        ///     Unoptimized naive escape time algorithm
+        ///     Does not use Complex type
+        /// </summary>
+        /// <param name="pxSize"></param>
+        /// <param name="maxIterations"></param>
+        /// <returns></returns>
+        public int[][] GenerateParallelNaive(int pxSize, int maxIterations)
+        {
+            _escapeValues = new int[pxSize][];
+
+            double deltaX = _numericWidth / pxSize;
+            double deltaY = _numericHeight / pxSize;
+
+            Parallel.For(
+                0,
+                pxSize,
+                i =>
+                {
+                    _escapeValues[i] = new int[pxSize];
+                    double x0 = minX + i * deltaX;
+
+                    for (int j = 0; j < pxSize; j++)
+                    {
+                        double y0 = minY + j * deltaY;
+
+                        double x = 0.0;
+                        double y = 0.0;
+                        int iterations = 0;
+
+                        while (x * x + y * y <= 2 * 2 && iterations < maxIterations)
+                        {
+                            double xTemp = x * x - y * y + x0;
+                            y = 2 * x * y + y0;
+                            x = xTemp;
+                            iterations++;
+                        }
+
+                        _escapeValues[i][j] = iterations;
+                    }
+                }
+            );
+
+            return _escapeValues;
+        }
+
+        /// <summary>
+        ///     Optimized escape time algorithm
+        ///     Does not use Complex type
+        /// </summary>
+        /// <param name="pxSize"></param>
+        /// <param name="maxIterations"></param>
+        /// <returns></returns>
+        public int[][] GenerateParallelOptimized(int pxSize, int maxIterations)
+        {
+            _escapeValues = new int[pxSize][];
+
+            double deltaX = _numericWidth / pxSize;
+            double deltaY = _numericHeight / pxSize;
+
+            Parallel.For(
+                0,
+                pxSize,
+                i =>
+                {
+                    _escapeValues[i] = new int[pxSize];
+                    double x0 = minX + i * deltaX;
+
+                    for (int j = 0; j < pxSize; j++)
+                    {
+                        double y0 = minY + j * deltaY;
+
+                        double x = 0.0;
+                        double xSqr = 0.0;
+                        double y = 0.0;
+                        double ySqr = 0.0;
+                        int iterations = 0;
+
+                        while (xSqr + ySqr <= 4 && iterations < maxIterations)
+                        {
+                            y = (x + x) * y + y0;
+                            x = xSqr - ySqr + x0;
+                            xSqr = x * x;
+                            ySqr = y * y;
+                            iterations++;
+                        }
+
                         _escapeValues[i][j] = iterations;
                     }
                 }

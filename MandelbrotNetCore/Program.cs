@@ -19,60 +19,59 @@ namespace MandelbrotNetCore
         {
             Console.WriteLine("Hello Mandelbrot!");
 
-            //ParallelVsSerial();
+            TimeAlgs();
 
-            var renderer = new Renderer(1000);
-            Bitmap bmp = renderer.Draw();
-            bmp.Save("MandelbrotRender.png", ImageFormat.Png);
+            //var renderer = new Renderer(1000);
+            //Bitmap bmp = renderer.Draw();
+            //bmp.Save("MandelbrotRender.png", ImageFormat.Png);
 
-            //RenderFrames(400);
-
-            //await RenderVideo(400);
+            //const int pxSize = 1080;
+            //RenderFrames(pxSize);
+            //await RenderVideo(pxSize);
 
             Console.WriteLine("Done");
 
             Console.Read();
         }
 
-        private static void ParallelVsSerial()
+        private static void TimeAlgs()
         {
             var mandelbrot = new Mandelbrot();
 
             var stopwatch = new Stopwatch();
 
             const int pxSize = 1000;
-            const int maxIterations = 1000;
+            const int maxIterations = 10000;
 
             // Timing
 
-            stopwatch.Start();
-            int[][] iterations = mandelbrot.Generate(pxSize, maxIterations);
+            // TOO SLOW LOL
+            //stopwatch.Start();
+            //int[][] iterations1 = mandelbrot.Generate(pxSize, maxIterations);
+            //stopwatch.Stop();
+            //Console.WriteLine("Serial:");
+            //Console.WriteLine(stopwatch.Elapsed);
+            //Console.WriteLine();
+
+            stopwatch.Restart();
+            int[][] iterations2 = mandelbrot.GenerateParallelWithComplex(pxSize, maxIterations);
             stopwatch.Stop();
-            Console.WriteLine("Serial:");
+            Console.WriteLine("Parallel (with Complex type):");
             Console.WriteLine(stopwatch.Elapsed);
             Console.WriteLine();
 
             stopwatch.Restart();
-            int[][] iterations2 = mandelbrot.GenerateParallel(pxSize, maxIterations);
+            int[][] iterations3 = mandelbrot.GenerateParallelNaive(pxSize, maxIterations);
             stopwatch.Stop();
-            Console.WriteLine("Parallel:");
+            Console.WriteLine("Parallel (naive):");
             Console.WriteLine(stopwatch.Elapsed);
             Console.WriteLine();
 
-            // Check data is correct
-
-            for (int i = 0; i < pxSize; i++)
-            {
-                for (int j = 0; j < pxSize; j++)
-                {
-                    if (iterations[i][j] != iterations2[i][j])
-                    {
-                        throw new Exception("iteration values were different");
-                    }
-                }
-            }
-
-            Console.WriteLine("Data matches");
+            stopwatch.Restart();
+            int[][] iterations4 = mandelbrot.GenerateParallelOptimized(pxSize, maxIterations);
+            stopwatch.Stop();
+            Console.WriteLine("Parallel (optimized):");
+            Console.WriteLine(stopwatch.Elapsed);
             Console.WriteLine();
         }
 
@@ -104,7 +103,7 @@ namespace MandelbrotNetCore
             }
 
             // Render
-            var renderer = new Renderer(400);
+            var renderer = new Renderer(pxSize);
 
             for (int i = 0; i < 360; i++)
             {

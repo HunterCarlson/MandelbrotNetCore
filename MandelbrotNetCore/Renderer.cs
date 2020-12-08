@@ -15,10 +15,10 @@ namespace MandelbrotNetCore
             _maxIterations = maxIterations;
 
             var mandelbrot = new Mandelbrot();
-            _iterations = mandelbrot.GenerateParallel(_pxSize, _maxIterations);
+            _iterations = mandelbrot.GenerateParallelOptimized(_pxSize, _maxIterations);
         }
 
-        public Bitmap Draw(double hueStep = 36.0, double hueOffset = 0.0)
+        public Bitmap Draw(double hueStep = 10.0, double hueOffset = 0.0)
         {
             var bitmap = new Bitmap(_pxSize, _pxSize);
 
